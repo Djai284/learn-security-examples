@@ -30,5 +30,31 @@ This example demonstrates spoofind through two ways -- Stealing cookies programm
 ## For you to answer
 
 1. Briefly explain the spoofing vulnerability in **insecure.ts**.
+
+The main vulnerability stems from insecure session cookie configuration in the express-session middleware. Specifically:
+- httpOnly: false allows client-side JavaScript to access the session cookie
+- No sameSite attribute is set, making it vulnerable to cross-site requests
+- Using a hardcoded secret ("SOMESECRET") which is not secure for production
+
 2. Briefly explain different ways in which vulnerability can be exploited.
+
+- Cookie Theft (shown in mal-steal-cookie.html):
+  Since httpOnly: false, malicious JavaScript can access document.cookie
+  The malicious site can steal the session cookie through JavaScript and send it to an attacker's server
+  Attacker can then use this cookie to impersonate the legitimate user
+
+- Cross-Site Request Forgery (CSRF) (shown in mal-csrf.html):
+  Without sameSite protection, a malicious site can make POST requests to http://localhost:8000/sensitive
+  If user is already authenticated (has valid session cookie), the browser will automatically include it
+  The attacker can trick the user into performing unwanted actions while logged in
+  For example, if the user is an Admin, the attacker could trigger the sensitive operation without their knowledge
+
 3. Briefly explain why **secure.ts** does not have the spoofing vulnerability in **insecure.ts**.
+
+The key difference is that secure.ts implements proper security headers and cookie configurations that follow security best practices, while insecure.ts leaves these protections disabled or misconfigured.
+
+- Sets httpOnly: true which prevents JavaScript from accessing the cookie
+- Enables sameSite: true which prevents the cookie from being sent in cross-site requests
+- Takes secret as a command line argument instead of hardcoding it
+- These security configurations prevent both cookie theft (through JavaScript) and CSRF attacks (through cross-site requests)
+
